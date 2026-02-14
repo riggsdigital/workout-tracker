@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 0;
+            margin: 0;
+            padding-bottom: 120px;
+        }
+
+        .header {
+            background: #2c2c2c;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #2c2c2c;
+            position: sticky;
+            top: 75px;
+            z-index: 99;
+            border-bottom: 1px solid #444;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #2c2c2c;
+            color: #888;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #fff;
+            background: #1a1a1a;
+            border-bottom: 3px solid #4CAF50;
+        }
+
+        .session {
+            display: none;
+            padding: 15px;
+        }
+
+        .session.active {
+            display: block;
+        }
+
+        .exercise {
+            background: #2c2c2c;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .exercise-name {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .exercise-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weight-display {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        .weight-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .weight-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #444;
+            color: #fff;
+            border: none;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weight-btn:active {
+            background: #555;
+        }
+
+        .weight-input-custom {
+            background: #444;
+            color: #fff;
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 16px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .sets-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .set-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .set-circle.incomplete {
+            background: #dc3545;
+        }
+
+        .set-circle.completed {
+            background: #dc3545;
+        }
+
+        .set-circle:active {
+            transform: scale(0.95);
+        }
+
+        .set-label {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .set-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .rest-timer-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #FF9800;
+            color: #000;
+            padding: 20px;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 200;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+        }
+
+        .rest-timer-container.active {
+            transform: translateY(0);
+        }
+
+        .rest-timer-text {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .rest-timer-label {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .timer-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            border-radius: 50%;
+            color: #000;
+            font-size: 32px;
+            font-weight: 300;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .timer-close-btn:active {
+            background: rgba(0,0,0,0.5);
+        }
+
+        .history-header {
+            margin-bottom: 20px;
+        }
+
+        .history-header h2 {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .recent-workouts,
+        .progress-charts {
+            margin-bottom: 30px;
+        }
+
+        .recent-workouts h3,
+        .progress-charts h3 {
+            font-size: 18px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .workout-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .workout-card {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .workout-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .workout-date {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .workout-session {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        .workout-exercises {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .workout-exercise-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .no-history {
+            color: #888;
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: #2c2c2c;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 200px;
+            position: relative;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke: #4CAF50;
+            stroke-width: 2;
+        }
+
+        .chart-point {
+            fill: #4CAF50;
+        }
+
+        .chart-grid {
+            stroke: #444;
+            stroke-width: 1;
+        }
+
+        .chart-label {
+            fill: #888;
+            font-size: 12px;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .export-btn,
+        .import-btn {
+            flex: 1;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .export-btn:active,
+        .import-btn:active {
+            background: #45a049;
+        }
+
+        .progression-banner {
+            background: #4CAF50;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .progression-banner.show {
+            display: block;
+        }
+
+        .finish-workout-btn {
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .finish-workout-btn:active {
+            background: #45a049;
+        }
+
+        .clear-session-btn {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .warmup-note {
+            background: #1e3a5f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .rest-note {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .edit-weight-btn {
+            background: none;
+            border: none;
+            color: #4CAF50;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2c2c2c;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px;
+            text-align: center;
+            background: #444;
+            border: 2px solid #666;
+            color: #fff;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-btn-cancel {
+            background: #666;
+            color: #fff;
+        }
+
+        .modal-btn-save {
+            background: #4CAF50;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Workout Tracker</h1>
+        <p>30-Minute Full-Body Program</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showSession('A')">Session A</button>
+        <button class="tab" onclick="showSession('B')">Session B</button>
+        <button class="tab" onclick="showSession('C')">Session C</button>
+        <button class="tab" onclick="showHistory()">History</button>
+    </div>
+
+    <!-- Session A -->
+    <div id="sessionA" class="session active">
+        <div class="warmup-note">
+            <strong>Warm-up (5 min):</strong> Light movement, bodyweight squats, arm circles, hip openers. Do 1 warm-up set of goblet squats at 50% working weight.
+        </div>
+
+        <!-- Goblet Squat -->
+        <div class="exercise" data-exercise="goblet-squat-a">
+            <div class="exercise-header">
+                <div class="exercise-name">Goblet Squat</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('goblet-squat-a', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('goblet-squat-a')">
+                        <span class="weight-display" data-weight>3×8 45 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('goblet-squat-a', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="8" onclick="tapSet(this, 'goblet-squat-a', 90)">8</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="8" onclick="tapSet(this, 'goblet-squat-a', 90)">8</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="8" onclick="tapSet(this, 'goblet-squat-a', 90)">8</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- Single-Arm DB Row -->
+        <div class="exercise" data-exercise="db-row-a">
+            <div class="exercise-header">
+                <div class="exercise-name">Single-Arm DB Row</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('db-row-a', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('db-row-a')">
+                        <span class="weight-display" data-weight>3×8 35 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('db-row-a', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="8" onclick="tapSet(this, 'db-row-a', 90)">8</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="8" onclick="tapSet(this, 'db-row-a', 90)">8</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="8" onclick="tapSet(this, 'db-row-a', 90)">8</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- Sled Push -->
+        <div class="exercise" data-exercise="sled-push-a">
+            <div class="exercise-header">
+                <div class="exercise-name">Sled Push</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('sled-push-a', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('sled-push-a')">
+                        <span class="weight-display" data-weight>3×100ft 90 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('sled-push-a', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="1" onclick="tapSet(this, 'sled-push-a', 90)">✓</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="1" onclick="tapSet(this, 'sled-push-a', 90)">✓</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="1" onclick="tapSet(this, 'sled-push-a', 90)">✓</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- KB Swings -->
+        <div class="exercise" data-exercise="kb-swing-a">
+            <div class="exercise-header">
+                <div class="exercise-name">Kettlebell Swings</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('kb-swing-a', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('kb-swing-a')">
+                        <span class="weight-display" data-weight>2×12 35 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('kb-swing-a', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 60 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="12" onclick="tapSet(this, 'kb-swing-a', 60)">12</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="12" onclick="tapSet(this, 'kb-swing-a', 60)">12</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <button class="finish-workout-btn" onclick="finishWorkout('A')">Finish Workout</button>
+        <button class="clear-session-btn" onclick="clearSession('A')">Clear Session A</button>
+    </div>
+
+    <!-- Session B -->
+    <div id="sessionB" class="session">
+        <div class="warmup-note">
+            <strong>Warm-up (5 min):</strong> Light movement, bodyweight squats, arm circles, hip openers. Do 1 warm-up set of RDLs at 50% working weight.
+        </div>
+
+        <!-- RDL -->
+        <div class="exercise" data-exercise="rdl-b">
+            <div class="exercise-header">
+                <div class="exercise-name">Romanian Deadlift</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('rdl-b', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('rdl-b')">
+                        <span class="weight-display" data-weight>3×8 95 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('rdl-b', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="8" onclick="tapSet(this, 'rdl-b', 90)">8</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="8" onclick="tapSet(this, 'rdl-b', 90)">8</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="8" onclick="tapSet(this, 'rdl-b', 90)">8</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- DB Bench -->
+        <div class="exercise" data-exercise="db-bench-b">
+            <div class="exercise-header">
+                <div class="exercise-name">Dumbbell Bench Press</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('db-bench-b', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('db-bench-b')">
+                        <span class="weight-display" data-weight>3×8 50 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('db-bench-b', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="8" onclick="tapSet(this, 'db-bench-b', 90)">8</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="8" onclick="tapSet(this, 'db-bench-b', 90)">8</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="8" onclick="tapSet(this, 'db-bench-b', 90)">8</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- Battle Ropes -->
+        <div class="exercise" data-exercise="battle-ropes-b">
+            <div class="exercise-header">
+                <div class="exercise-name">Battle Ropes</div>
+                <div class="exercise-info">
+                    <span class="weight-display">3×20sec</span>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 60 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="1" onclick="tapSet(this, 'battle-ropes-b', 60)">✓</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="1" onclick="tapSet(this, 'battle-ropes-b', 60)">✓</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="1" onclick="tapSet(this, 'battle-ropes-b', 60)">✓</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete!</div>
+        </div>
+
+        <!-- Farmer's Carry -->
+        <div class="exercise" data-exercise="farmer-carry-b">
+            <div class="exercise-header">
+                <div class="exercise-name">Farmer's Carry</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('farmer-carry-b', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('farmer-carry-b')">
+                        <span class="weight-display" data-weight>2×130ft 50 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('farmer-carry-b', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 60 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="1" onclick="tapSet(this, 'farmer-carry-b', 60)">✓</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="1" onclick="tapSet(this, 'farmer-carry-b', 60)">✓</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <button class="finish-workout-btn" onclick="finishWorkout('B')">Finish Workout</button>
+        <button class="clear-session-btn" onclick="clearSession('B')">Clear Session B</button>
+    </div>
+
+    <!-- Session C -->
+    <div id="sessionC" class="session">
+        <div class="warmup-note">
+            <strong>Warm-up (5 min):</strong> Light movement, bodyweight squats, arm circles, hip openers. Do 1 warm-up set of deadlifts at 50% working weight.
+        </div>
+
+        <!-- Deadlift -->
+        <div class="exercise" data-exercise="deadlift-c">
+            <div class="exercise-header">
+                <div class="exercise-name">Barbell/Trap Bar Deadlift</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('deadlift-c', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('deadlift-c')">
+                        <span class="weight-display" data-weight>3×6 135 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('deadlift-c', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 2 minutes</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="6" onclick="tapSet(this, 'deadlift-c', 120)">6</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="6" onclick="tapSet(this, 'deadlift-c', 120)">6</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="6" onclick="tapSet(this, 'deadlift-c', 120)">6</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- OHP -->
+        <div class="exercise" data-exercise="ohp-c">
+            <div class="exercise-header">
+                <div class="exercise-name">Overhead Press</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('ohp-c', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('ohp-c')">
+                        <span class="weight-display" data-weight>3×8 65 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('ohp-c', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="8" onclick="tapSet(this, 'ohp-c', 90)">8</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="8" onclick="tapSet(this, 'ohp-c', 90)">8</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="8" onclick="tapSet(this, 'ohp-c', 90)">8</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- Sled Drag -->
+        <div class="exercise" data-exercise="sled-drag-c">
+            <div class="exercise-header">
+                <div class="exercise-name">Sled Drag (backward)</div>
+                <div class="exercise-info">
+                    <button class="weight-btn" onclick="adjustWeight('sled-drag-c', -5)">−</button>
+                    <button class="edit-weight-btn" onclick="openWeightModal('sled-drag-c')">
+                        <span class="weight-display" data-weight>3×100ft 90 lbs</span>
+                    </button>
+                    <button class="weight-btn" onclick="adjustWeight('sled-drag-c', 5)">+</button>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 90 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="1" onclick="tapSet(this, 'sled-drag-c', 90)">✓</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="1" onclick="tapSet(this, 'sled-drag-c', 90)">✓</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="3" data-target="1" onclick="tapSet(this, 'sled-drag-c', 90)">✓</div>
+                    <div class="set-label">Set 3</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete! Add 5 lbs next session</div>
+        </div>
+
+        <!-- Plank -->
+        <div class="exercise" data-exercise="plank-c">
+            <div class="exercise-header">
+                <div class="exercise-name">Plank</div>
+                <div class="exercise-info">
+                    <span class="weight-display">2×30-45sec</span>
+                </div>
+            </div>
+            <div class="rest-note">Rest: 60 seconds</div>
+            <div class="sets-container">
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="1" data-target="1" onclick="tapSet(this, 'plank-c', 60)">✓</div>
+                    <div class="set-label">Set 1</div>
+                </div>
+                <div class="set-wrapper">
+                    <div class="set-circle" data-set="2" data-target="1" onclick="tapSet(this, 'plank-c', 60)">✓</div>
+                    <div class="set-label">Set 2</div>
+                </div>
+            </div>
+            <div class="progression-banner">✓ All sets complete!</div>
+        </div>
+
+        <button class="finish-workout-btn" onclick="finishWorkout('C')">Finish Workout</button>
+        <button class="clear-session-btn" onclick="clearSession('C')">Clear Session C</button>
+    </div>
+
+    <!-- History Section -->
+    <div id="sessionHistory" class="session">
+        <div class="history-header">
+            <h2>Workout History</h2>
+        </div>
+
+        <div class="recent-workouts">
+            <h3>Recent Workouts</h3>
+            <div id="workoutList" class="workout-list">
+                <div class="no-history">No workouts logged yet. Complete a session to see your history!</div>
+            </div>
+        </div>
+
+        <div class="progress-charts">
+            <h3>Progress Tracking</h3>
+            <div id="chartContainer" class="chart-container">
+                <div class="no-history">Complete workouts to see your progress charts!</div>
+            </div>
+        </div>
+
+        <div class="history-actions">
+            <button class="export-btn" onclick="exportHistory()">📥 Export History (CSV)</button>
+            <button class="import-btn" onclick="document.getElementById('importFile').click()">📤 Import History (CSV)</button>
+            <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importHistory(event)">
+        </div>
+
+        <button class="clear-session-btn" onclick="clearAllHistory()">Clear All History</button>
+    </div>
+
+    <!-- Rest Timer (fixed at bottom) -->
+    <div class="rest-timer-container" id="restTimer">
+        <div class="rest-timer-text" id="restTimerText">1:30</div>
+        <div class="rest-timer-label">Rest Time Remaining</div>
+        <button class="timer-close-btn" onclick="stopRestTimer()">×</button>
+    </div>
+
+    <!-- Weight Edit Modal -->
+    <div class="modal" id="weightModal">
+        <div class="modal-content">
+            <h3>Edit Weight</h3>
+            <input type="number" class="modal-input" id="weightInput" placeholder="0">
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeWeightModal()">Cancel</button>
+                <button class="modal-btn modal-btn-save" onclick="saveWeight()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTimer = null;
+        let currentExercise = null;
+
+        function showSession(session) {
+            // Hide all sessions
+            document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected session
+            document.getElementById('session' + session).classList.add('active');
+            
+            // Highlight active tab
+            const tabs = document.querySelectorAll('.tab');
+            if (session === 'A') tabs[0].classList.add('active');
+            if (session === 'B') tabs[1].classList.add('active');
+            if (session === 'C') tabs[2].classList.add('active');
+            
+            // Load saved data for this session
+            loadSessionData(session);
+        }
+
+        function showHistory() {
+            // Hide all sessions
+            document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show history section
+            document.getElementById('sessionHistory').classList.add('active');
+            
+            // Highlight history tab
+            const tabs = document.querySelectorAll('.tab');
+            tabs[3].classList.add('active');
+            
+            // Load and display history
+            loadHistory();
+        }
+
+        function tapSet(circle, exerciseId, restSeconds) {
+            const target = parseInt(circle.getAttribute('data-target'));
+            const currentReps = circle.textContent === '✓' ? 1 : parseInt(circle.textContent);
+            const isCompleted = circle.classList.contains('completed');
+            const isIncomplete = circle.classList.contains('incomplete');
+            
+            // For exercises with checkmark (distance/time based)
+            if (circle.getAttribute('data-target') === '1' && circle.textContent === '✓') {
+                if (!isIncomplete) {
+                    // First tap - mark as incomplete (red)
+                    circle.classList.add('incomplete');
+                    saveSetData(exerciseId, circle.getAttribute('data-set'), 0);
+                } else {
+                    // Second tap - cycle back to complete (green)
+                    circle.classList.remove('incomplete');
+                    saveSetData(exerciseId, circle.getAttribute('data-set'), 1);
+                    checkProgression(exerciseId);
+                    return;
+                }
+                startRestTimer(restSeconds);
+                checkProgression(exerciseId);
+                return;
+            }
+            
+            // For rep-based exercises
+            if (currentReps === target && !isCompleted && !isIncomplete) {
+                // First tap - mark as completed (turn red, keep same number)
+                circle.classList.add('completed');
+                circle.classList.add('incomplete');
+                saveSetData(exerciseId, circle.getAttribute('data-set'), target);
+                startRestTimer(restSeconds);
+                checkProgression(exerciseId);
+            } else if (currentReps === target && isCompleted) {
+                // Second tap - start counting down
+                circle.textContent = target - 1;
+                saveSetData(exerciseId, circle.getAttribute('data-set'), target - 1);
+                startRestTimer(restSeconds);
+                checkProgression(exerciseId);
+            } else if (currentReps > 1) {
+                // Continue reducing
+                circle.textContent = currentReps - 1;
+                saveSetData(exerciseId, circle.getAttribute('data-set'), currentReps - 1);
+                startRestTimer(restSeconds);
+                checkProgression(exerciseId);
+            } else if (currentReps === 1) {
+                // Cycle back to target, turn green
+                circle.textContent = target;
+                circle.classList.remove('incomplete');
+                circle.classList.remove('completed');
+                saveSetData(exerciseId, circle.getAttribute('data-set'), target);
+                checkProgression(exerciseId);
+            }
+        }
+
+        function startRestTimer(seconds) {
+            const timerDiv = document.getElementById('restTimer');
+            const timerText = document.getElementById('restTimerText');
+            
+            // Clear existing timer
+            if (currentTimer) {
+                clearInterval(currentTimer);
+            }
+            
+            timerDiv.classList.add('active');
+            let remaining = seconds;
+            
+            currentTimer = setInterval(() => {
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                timerText.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                
+                remaining--;
+                
+                if (remaining < 0) {
+                    clearInterval(currentTimer);
+                    timerText.textContent = 'Done!';
+                    setTimeout(() => {
+                        timerDiv.classList.remove('active');
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        function stopRestTimer() {
+            const timerDiv = document.getElementById('restTimer');
+            
+            if (currentTimer) {
+                clearInterval(currentTimer);
+                currentTimer = null;
+            }
+            
+            timerDiv.classList.remove('active');
+        }
+
+        function adjustWeight(exerciseId, amount) {
+            const exercise = document.querySelector(`[data-exercise="${exerciseId}"]`);
+            const weightDisplay = exercise.querySelector('[data-weight]');
+            const currentText = weightDisplay.textContent;
+            
+            // Extract current weight
+            const match = currentText.match(/(\d+)\s*lbs/);
+            if (match) {
+                const currentWeight = parseInt(match[1]);
+                const newWeight = Math.max(0, currentWeight + amount);
+                const newText = currentText.replace(/\d+\s*lbs/, newWeight + ' lbs');
+                weightDisplay.textContent = newText;
+                
+                saveExerciseWeight(exerciseId, newWeight);
+            }
+        }
+
+        function openWeightModal(exerciseId) {
+            const exercise = document.querySelector(`[data-exercise="${exerciseId}"]`);
+            const weightDisplay = exercise.querySelector('[data-weight]');
+            const currentText = weightDisplay.textContent;
+            
+            const match = currentText.match(/(\d+)\s*lbs/);
+            if (match) {
+                document.getElementById('weightInput').value = match[1];
+            }
+            
+            currentExercise = exerciseId;
+            document.getElementById('weightModal').classList.add('active');
+            document.getElementById('weightInput').focus();
+        }
+
+        function closeWeightModal() {
+            document.getElementById('weightModal').classList.remove('active');
+            currentExercise = null;
+        }
+
+        function saveWeight() {
+            if (!currentExercise) return;
+            
+            const newWeight = parseInt(document.getElementById('weightInput').value) || 0;
+            const exercise = document.querySelector(`[data-exercise="${currentExercise}"]`);
+            const weightDisplay = exercise.querySelector('[data-weight]');
+            const currentText = weightDisplay.textContent;
+            
+            const newText = currentText.replace(/\d+\s*lbs/, newWeight + ' lbs');
+            weightDisplay.textContent = newText;
+            
+            saveExerciseWeight(currentExercise, newWeight);
+            closeWeightModal();
+        }
+
+        function checkProgression(exerciseId) {
+            const exercise = document.querySelector(`[data-exercise="${exerciseId}"]`);
+            const circles = exercise.querySelectorAll('.set-circle');
+            const banner = exercise.querySelector('.progression-banner');
+            
+            let allComplete = true;
+            circles.forEach(circle => {
+                const target = parseInt(circle.getAttribute('data-target'));
+                const current = circle.textContent === '✓' ? 1 : parseInt(circle.textContent);
+                const isCompleted = circle.classList.contains('completed');
+                const isIncomplete = circle.classList.contains('incomplete');
+                
+                // For checkmark exercises - must be RED (incomplete class present)
+                if (circle.textContent === '✓') {
+                    if (!isIncomplete) {
+                        // If it's green (no incomplete class), not all complete
+                        allComplete = false;
+                    }
+                }
+                // For rep-based exercises - must be RED at target reps
+                else {
+                    // Must have completed class AND be at target reps AND be red (incomplete)
+                    if (!isCompleted || current !== target || !isIncomplete) {
+                        allComplete = false;
+                    }
+                }
+            });
+            
+            if (allComplete) {
+                banner.classList.add('show');
+                
+                // Calculate next weight for progression
+                const weightDisplay = exercise.querySelector('[data-weight]');
+                if (weightDisplay) {
+                    const match = weightDisplay.textContent.match(/(\d+)\s*lbs/);
+                    if (match) {
+                        const nextWeight = parseInt(match[1]) + 5;
+                        saveNextWeight(exerciseId, nextWeight);
+                    }
+                }
+            } else {
+                banner.classList.remove('show');
+            }
+        }
+
+        function saveSetData(exerciseId, setNum, reps) {
+            localStorage.setItem(`${exerciseId}-set${setNum}`, reps);
+        }
+
+        function saveExerciseWeight(exerciseId, weight) {
+            localStorage.setItem(`${exerciseId}-weight`, weight);
+        }
+
+        function saveNextWeight(exerciseId, weight) {
+            localStorage.setItem(`${exerciseId}-next-weight`, weight);
+        }
+
+        function loadSessionData(session) {
+            const sessionDiv = document.getElementById('session' + session);
+            const exercises = sessionDiv.querySelectorAll('.exercise');
+            
+            exercises.forEach(exercise => {
+                const exerciseId = exercise.getAttribute('data-exercise');
+                
+                // Load next weight if available
+                const nextWeight = localStorage.getItem(`${exerciseId}-next-weight`);
+                if (nextWeight) {
+                    const weightDisplay = exercise.querySelector('[data-weight]');
+                    if (weightDisplay) {
+                        const currentText = weightDisplay.textContent;
+                        const newText = currentText.replace(/\d+\s*lbs/, nextWeight + ' lbs');
+                        weightDisplay.textContent = newText;
+                    }
+                }
+                
+                // Load saved weight
+                const savedWeight = localStorage.getItem(`${exerciseId}-weight`);
+                if (savedWeight) {
+                    const weightDisplay = exercise.querySelector('[data-weight]');
+                    if (weightDisplay) {
+                        const currentText = weightDisplay.textContent;
+                        const newText = currentText.replace(/\d+\s*lbs/, savedWeight + ' lbs');
+                        weightDisplay.textContent = newText;
+                    }
+                }
+                
+                // Load set data
+                const circles = exercise.querySelectorAll('.set-circle');
+                circles.forEach(circle => {
+                    const setNum = circle.getAttribute('data-set');
+                    const savedReps = localStorage.getItem(`${exerciseId}-set${setNum}`);
+                    
+                    if (savedReps !== null) {
+                        const reps = parseInt(savedReps);
+                        const target = parseInt(circle.getAttribute('data-target'));
+                        
+                        if (circle.textContent === '✓') {
+                            if (reps === 0) {
+                                circle.classList.add('incomplete');
+                            }
+                        } else {
+                            // If saved reps equals target, mark as completed (red, same number)
+                            if (reps === target) {
+                                circle.classList.add('completed');
+                                circle.classList.add('incomplete');
+                            } else {
+                                // If saved reps less than target, show actual reps and mark incomplete
+                                circle.textContent = reps;
+                                circle.classList.add('incomplete');
+                            }
+                        }
+                    }
+                });
+                
+                checkProgression(exerciseId);
+            });
+        }
+
+        function clearSession(session) {
+            if (!confirm(`Clear all data for Session ${session}?`)) return;
+            
+            const sessionDiv = document.getElementById('session' + session);
+            const exercises = sessionDiv.querySelectorAll('.exercise');
+            
+            exercises.forEach(exercise => {
+                const exerciseId = exercise.getAttribute('data-exercise');
+                
+                // Reset circles
+                const circles = exercise.querySelectorAll('.set-circle');
+                circles.forEach(circle => {
+                    const target = circle.getAttribute('data-target');
+                    if (parseInt(target) === 1) {
+                        circle.textContent = '✓';
+                    } else {
+                        circle.textContent = target;
+                    }
+                    circle.classList.remove('incomplete');
+                    circle.classList.remove('completed');
+                    
+                    const setNum = circle.getAttribute('data-set');
+                    localStorage.removeItem(`${exerciseId}-set${setNum}`);
+                });
+                
+                // Hide banner
+                exercise.querySelector('.progression-banner').classList.remove('show');
+                
+                // Clear next weight
+                localStorage.removeItem(`${exerciseId}-next-weight`);
+            });
+        }
+
+        function finishWorkout(session) {
+            if (!confirm(`Finish workout and save progress?`)) return;
+            
+            const sessionDiv = document.getElementById('session' + session);
+            const exercises = sessionDiv.querySelectorAll('.exercise');
+            
+            // Prepare workout data
+            const workoutData = {
+                date: new Date().toISOString(),
+                session: session,
+                exercises: []
+            };
+            
+            exercises.forEach(exercise => {
+                const exerciseId = exercise.getAttribute('data-exercise');
+                const exerciseName = exercise.querySelector('.exercise-name').textContent;
+                const weightDisplay = exercise.querySelector('[data-weight]');
+                const circles = exercise.querySelectorAll('.set-circle');
+                
+                // Get weight
+                let weight = 0;
+                if (weightDisplay) {
+                    const match = weightDisplay.textContent.match(/(\d+)\s*lbs/);
+                    if (match) {
+                        weight = parseInt(match[1]);
+                    }
+                }
+                
+                // Get sets and reps
+                const sets = [];
+                circles.forEach(circle => {
+                    const target = parseInt(circle.getAttribute('data-target'));
+                    const current = circle.textContent === '✓' ? 1 : parseInt(circle.textContent);
+                    sets.push({
+                        target: target,
+                        completed: current
+                    });
+                });
+                
+                workoutData.exercises.push({
+                    id: exerciseId,
+                    name: exerciseName,
+                    weight: weight,
+                    sets: sets
+                });
+                
+                // Check if all sets were completed at target reps (progression eligible)
+                let progressionEligible = true;
+                circles.forEach(circle => {
+                    const target = parseInt(circle.getAttribute('data-target'));
+                    const current = circle.textContent === '✓' ? 1 : parseInt(circle.textContent);
+                    const isCompleted = circle.classList.contains('completed');
+                    const isIncomplete = circle.classList.contains('incomplete');
+                    
+                    if (circle.textContent === '✓') {
+                        if (!isIncomplete) {
+                            progressionEligible = false;
+                        }
+                    } else {
+                        if (!isCompleted || current !== target || !isIncomplete) {
+                            progressionEligible = false;
+                        }
+                    }
+                });
+                
+                // Apply weight progression if eligible
+                if (progressionEligible && weightDisplay) {
+                    const match = weightDisplay.textContent.match(/(\d+)\s*lbs/);
+                    if (match) {
+                        const currentWeight = parseInt(match[1]);
+                        const newWeight = currentWeight + 5;
+                        const newText = weightDisplay.textContent.replace(/\d+\s*lbs/, newWeight + ' lbs');
+                        weightDisplay.textContent = newText;
+                        saveExerciseWeight(exerciseId, newWeight);
+                    }
+                }
+                
+                // Reset circles to default
+                circles.forEach(circle => {
+                    const target = circle.getAttribute('data-target');
+                    if (parseInt(target) === 1) {
+                        circle.textContent = '✓';
+                    } else {
+                        circle.textContent = target;
+                    }
+                    circle.classList.remove('incomplete');
+                    circle.classList.remove('completed');
+                    
+                    const setNum = circle.getAttribute('data-set');
+                    localStorage.removeItem(`${exerciseId}-set${setNum}`);
+                });
+                
+                // Hide progression banner
+                exercise.querySelector('.progression-banner').classList.remove('show');
+                
+                // Clear next weight suggestion (already applied if eligible)
+                localStorage.removeItem(`${exerciseId}-next-weight`);
+            });
+            
+            // Save workout to history
+            saveWorkoutHistory(workoutData);
+            
+            // Show confirmation
+            alert('Workout complete! Progress saved.');
+        }
+
+        function saveWorkoutHistory(workoutData) {
+            // Get existing history
+            let history = JSON.parse(localStorage.getItem('workout-history') || '[]');
+            
+            // Add new workout
+            history.unshift(workoutData);
+            
+            // Keep only last 50 workouts
+            if (history.length > 50) {
+                history = history.slice(0, 50);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('workout-history', JSON.stringify(history));
+        }
+
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSessionData('A');
+        });
+
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('workout-history') || '[]');
+            const workoutListDiv = document.getElementById('workoutList');
+            const chartContainerDiv = document.getElementById('chartContainer');
+            
+            // Display last 5 workouts
+            if (history.length === 0) {
+                workoutListDiv.innerHTML = '<div class="no-history">No workouts logged yet. Complete a session to see your history!</div>';
+                chartContainerDiv.innerHTML = '<div class="no-history">Complete workouts to see your progress charts!</div>';
+                return;
+            }
+            
+            // Show recent workouts
+            const recentWorkouts = history.slice(0, 5);
+            workoutListDiv.innerHTML = '';
+            
+            recentWorkouts.forEach(workout => {
+                const date = new Date(workout.date);
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                
+                const card = document.createElement('div');
+                card.className = 'workout-card';
+                
+                let exercisesHTML = '';
+                workout.exercises.forEach(ex => {
+                    const setsStr = ex.sets.map(s => s.completed).join(', ');
+                    exercisesHTML += `
+                        <div class="workout-exercise-row">
+                            <span>${ex.name}</span>
+                            <span>${ex.weight ? ex.weight + ' lbs' : ''} (${setsStr})</span>
+                        </div>
+                    `;
+                });
+                
+                card.innerHTML = `
+                    <div class="workout-card-header">
+                        <div class="workout-session">Session ${workout.session}</div>
+                        <div class="workout-date">${dateStr} ${timeStr}</div>
+                    </div>
+                    <div class="workout-exercises">
+                        ${exercisesHTML}
+                    </div>
+                `;
+                
+                workoutListDiv.appendChild(card);
+            });
+            
+            // Generate progress charts
+            generateProgressCharts(history, chartContainerDiv);
+        }
+
+        function generateProgressCharts(history, container) {
+            container.innerHTML = '';
+            
+            // Track exercises across all sessions
+            const exerciseData = {};
+            
+            history.forEach(workout => {
+                workout.exercises.forEach(ex => {
+                    if (ex.weight > 0) {
+                        if (!exerciseData[ex.name]) {
+                            exerciseData[ex.name] = [];
+                        }
+                        exerciseData[ex.name].push({
+                            date: new Date(workout.date),
+                            weight: ex.weight
+                        });
+                    }
+                });
+            });
+            
+            // Create chart for each exercise
+            Object.keys(exerciseData).forEach(exerciseName => {
+                const data = exerciseData[exerciseName].reverse(); // Oldest to newest
+                
+                if (data.length < 2) return; // Need at least 2 points for a chart
+                
+                const chartCard = document.createElement('div');
+                chartCard.className = 'chart-card';
+                
+                const chartTitle = document.createElement('div');
+                chartTitle.className = 'chart-title';
+                chartTitle.textContent = exerciseName;
+                
+                const chartCanvas = document.createElement('div');
+                chartCanvas.className = 'chart-canvas';
+                
+                // Create simple SVG chart
+                const svg = createProgressChart(data);
+                chartCanvas.appendChild(svg);
+                
+                chartCard.appendChild(chartTitle);
+                chartCard.appendChild(chartCanvas);
+                container.appendChild(chartCard);
+            });
+            
+            if (Object.keys(exerciseData).length === 0) {
+                container.innerHTML = '<div class="no-history">Complete more workouts to see progress charts!</div>';
+            }
+        }
+
+        function createProgressChart(data) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'chart-svg');
+            svg.setAttribute('viewBox', '0 0 300 150');
+            
+            // Find min and max weights
+            const weights = data.map(d => d.weight);
+            const minWeight = Math.min(...weights);
+            const maxWeight = Math.max(...weights);
+            const weightRange = maxWeight - minWeight || 10;
+            
+            // Chart dimensions
+            const padding = 20;
+            const chartWidth = 300 - (padding * 2);
+            const chartHeight = 150 - (padding * 2);
+            
+            // Draw grid lines
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartHeight / 4) * i;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', padding);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', 300 - padding);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'chart-grid');
+                svg.appendChild(line);
+                
+                // Weight labels
+                const weight = maxWeight - (weightRange / 4) * i;
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', padding - 5);
+                text.setAttribute('y', y + 4);
+                text.setAttribute('text-anchor', 'end');
+                text.setAttribute('class', 'chart-label');
+                text.textContent = Math.round(weight);
+                svg.appendChild(text);
+            }
+            
+            // Create line path
+            let pathData = '';
+            data.forEach((point, index) => {
+                const x = padding + (chartWidth / (data.length - 1)) * index;
+                const y = padding + chartHeight - ((point.weight - minWeight) / weightRange) * chartHeight;
+                
+                if (index === 0) {
+                    pathData += `M ${x} ${y}`;
+                } else {
+                    pathData += ` L ${x} ${y}`;
+                }
+                
+                // Draw point
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', 4);
+                circle.setAttribute('class', 'chart-point');
+                svg.appendChild(circle);
+            });
+            
+            // Draw line
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('class', 'chart-line');
+            svg.insertBefore(path, svg.firstChild);
+            
+            return svg;
+        }
+
+        function clearAllHistory() {
+            if (!confirm('Clear all workout history? This cannot be undone.')) return;
+            
+            localStorage.removeItem('workout-history');
+            loadHistory();
+            alert('All history cleared.');
+        }
+
+        function exportHistory() {
+            const history = JSON.parse(localStorage.getItem('workout-history') || '[]');
+            
+            if (history.length === 0) {
+                alert('No workout history to export.');
+                return;
+            }
+            
+            // Create CSV header
+            let csv = 'Date,Time,Session,Exercise,Weight (lbs),Set 1,Set 2,Set 3\n';
+            
+            // Add each workout
+            history.forEach(workout => {
+                const date = new Date(workout.date);
+                const dateStr = date.toLocaleDateString('en-US');
+                const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                
+                workout.exercises.forEach(ex => {
+                    const set1 = ex.sets[0] ? ex.sets[0].completed : '';
+                    const set2 = ex.sets[1] ? ex.sets[1].completed : '';
+                    const set3 = ex.sets[2] ? ex.sets[2].completed : '';
+                    
+                    csv += `"${dateStr}","${timeStr}","${workout.session}","${ex.name}",${ex.weight || ''},${set1},${set2},${set3}\n`;
+                });
+            });
+            
+            // Create download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `workout-history-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert('History exported successfully!');
+        }
+
+        function importHistory(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    
+                    // Skip header
+                    const dataLines = lines.slice(1).filter(line => line.trim());
+                    
+                    if (dataLines.length === 0) {
+                        alert('CSV file is empty or invalid.');
+                        return;
+                    }
+                    
+                    // Ask user: merge or replace
+                    const action = confirm('Click OK to MERGE with existing history, or Cancel to REPLACE all history.');
+                    
+                    let history = [];
+                    if (action) {
+                        // Merge - keep existing
+                        history = JSON.parse(localStorage.getItem('workout-history') || '[]');
+                    }
+                    
+                    // Parse CSV into workout objects
+                    const workoutMap = new Map();
+                    
+                    dataLines.forEach(line => {
+                        // Parse CSV line (handle quoted fields)
+                        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                        if (!matches || matches.length < 8) return;
+                        
+                        const dateStr = matches[0].replace(/"/g, '');
+                        const timeStr = matches[1].replace(/"/g, '');
+                        const session = matches[2].replace(/"/g, '');
+                        const exerciseName = matches[3].replace(/"/g, '');
+                        const weight = parseInt(matches[4]) || 0;
+                        const set1 = parseInt(matches[5]) || 0;
+                        const set2 = parseInt(matches[6]) || 0;
+                        const set3 = parseInt(matches[7]) || 0;
+                        
+                        // Create unique key for each workout
+                        const workoutKey = `${dateStr}_${timeStr}_${session}`;
+                        
+                        if (!workoutMap.has(workoutKey)) {
+                            workoutMap.set(workoutKey, {
+                                date: new Date(`${dateStr} ${timeStr}`).toISOString(),
+                                session: session,
+                                exercises: []
+                            });
+                        }
+                        
+                        const workout = workoutMap.get(workoutKey);
+                        workout.exercises.push({
+                            id: exerciseName.toLowerCase().replace(/\s+/g, '-'),
+                            name: exerciseName,
+                            weight: weight,
+                            sets: [
+                                { target: set1, completed: set1 },
+                                { target: set2, completed: set2 },
+                                { target: set3, completed: set3 }
+                            ].filter(s => s.target > 0)
+                        });
+                    });
+                    
+                    // Add imported workouts to history
+                    workoutMap.forEach(workout => {
+                        history.push(workout);
+                    });
+                    
+                    // Sort by date (newest first)
+                    history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Save to localStorage
+                    localStorage.setItem('workout-history', JSON.stringify(history));
+                    
+                    // Reload history display
+                    loadHistory();
+                    
+                    alert(`Import successful! ${workoutMap.size} workout(s) imported.`);
+                    
+                } catch (error) {
+                    alert('Error importing CSV: ' + error.message);
+                    console.error('Import error:', error);
+                }
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Close modal on background click
+        document.getElementById('weightModal').addEventListener('click', (e) => {
+            if (e.target.id === 'weightModal') {
+                closeWeightModal();
+            }
+        });
+
+        // Save weight on Enter key
+        document.getElementById('weightInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveWeight();
+            }
+        });
+    </script>
+</body>
+</html>
